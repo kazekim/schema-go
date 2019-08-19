@@ -21,7 +21,7 @@ type A struct {
 	YearOfBirth *int
 	Pos string `schema:"Position"`
 	Doc enum.DocumentType
-	B B
+	B B `schema:",recursive_struct"`
 }
 
 func main() {
@@ -47,10 +47,6 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	decoder.Decode(&a, r.PostForm)
 
 	fmt.Println(a)
-
-	if a.Doc == enum.DOCUMENTTYPE_COMPANYID {
-		fmt.Println("YOYOYOYO")
-	}
 
 
 	//p := wwhttpparser.NewParser(r)
