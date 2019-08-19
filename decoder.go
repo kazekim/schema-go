@@ -22,7 +22,11 @@ type Decoder struct {
 	cache             *cache
 	zeroEmpty         bool
 	ignoreUnknownKeys bool
+	parserMap *CustomParserMap
 }
+
+// CustomParserMap custom map for user define parser... Key is the Type of Field. Value is the function name use for parsing data
+type CustomParserMap map[string]func(value string, rv reflect.Value, typeName string) error
 
 // SetAliasTag changes the tag used to locate custom field aliases.
 // The default tag is "schema".
@@ -77,10 +81,12 @@ func (d *Decoder) Decode(dst interface{}, src map[string][]string) error {
 	errors := MultiError{}
 	for path, values := range src {
 		if parts, err := d.cache.parsePath(path, t); err == nil {
+			//fmt.Println("ddddd ", v, " ", path, " ", parts, " ", values)
 			if err = d.decode(v, path, parts, values); err != nil {
 				errors[path] = err
 			}
 		} else if !d.ignoreUnknownKeys {
+			//fmt.Println("vvvvv ", v, " ", path, " ", parts, " ", values)
 			errors[path] = UnknownKeyError{Key: path}
 		}
 	}
@@ -354,6 +360,14 @@ func (d *Decoder) decode(v reflect.Value, path string, parts []pathPart, values 
 			}
 		} else if conv := builtinConverters[t.Kind()]; conv != nil {
 			if value := conv(val); value.IsValid() {
+
+				if d.hasCustomParser(v) {
+					err := d.parseCustomParser(val, v)
+					if err != nil {
+						return err
+					}
+					return nil
+				}
 				v.Set(value.Convert(t))
 			} else {
 				return ConversionError{
