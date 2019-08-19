@@ -52,15 +52,18 @@ func (c *cache) parsePath(p string, t reflect.Type) ([]pathPart, error) {
 	path := make([]string, 0)
 	keys := strings.Split(p, ".")
 	for i := 0; i < len(keys); i++ {
+
 		if t.Kind() != reflect.Struct {
 			return nil, invalidPath
 		}
 		if struc = c.get(t); struc == nil {
 			return nil, invalidPath
 		}
+
 		if field = struc.get(keys[i]); field == nil {
 			return nil, invalidPath
 		}
+
 		// Valid field. Append index.
 		path = append(path, field.name)
 		if field.isSliceOfStructs && (!field.unmarshalerInfo.IsValid || (field.unmarshalerInfo.IsValid && field.unmarshalerInfo.IsSliceElement)) {
@@ -197,6 +200,7 @@ func (c *cache) createField(field reflect.StructField, parentAlias string) *fiel
 		isSliceOfStructs: isSlice && isStruct,
 		isAnonymous:      field.Anonymous,
 		isRequired:       options.Contains("required"),
+		isSubStructParse: options.Contains("recursive_struct"),
 	}
 }
 
@@ -248,6 +252,7 @@ type fieldInfo struct {
 	// isAnonymous indicates whether the field is embedded in the struct.
 	isAnonymous bool
 	isRequired  bool
+	isSubStructParse bool
 }
 
 func (f *fieldInfo) paths(prefix string) []string {

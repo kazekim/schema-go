@@ -81,12 +81,31 @@ func (d *Decoder) Decode(dst interface{}, src map[string][]string) error {
 	errors := MultiError{}
 	for path, values := range src {
 		if parts, err := d.cache.parsePath(path, t); err == nil {
-			//fmt.Println("ddddd ", v, " ", path, " ", parts, " ", values)
 			if err = d.decode(v, path, parts, values); err != nil {
 				errors[path] = err
 			}
 		} else if !d.ignoreUnknownKeys {
-			//fmt.Println("vvvvv ", v, " ", path, " ", parts, " ", values)
+			if st, sName, err := d.findMatchRecursiveStructType(t, path); err == nil {
+
+				c := newCache()
+				_, err := c.parsePath("B", st)
+				if err == nil {
+					err = fmt.Errorf("invalid path in cache.parsePath should return an error.")
+					errors[path] = err
+					continue
+				}
+				if parts, err := c.parsePath(path, st); err == nil {
+
+					sv := v.FieldByName(*sName)
+					if err = d.decode(sv, path, parts, values); err != nil {
+						errors[path] = err
+						continue
+					}
+				}else{
+					errors[path] = err
+					continue
+				}
+			}
 			errors[path] = UnknownKeyError{Key: path}
 		}
 	}
@@ -190,6 +209,7 @@ func (d *Decoder) decode(v reflect.Value, path string, parts []pathPart, values 
 		}
 		v = v.FieldByName(name)
 	}
+
 	// Don't even bother for unexported fields.
 	if !v.CanSet() {
 		return nil
@@ -368,6 +388,7 @@ func (d *Decoder) decode(v reflect.Value, path string, parts []pathPart, values 
 					}
 					return nil
 				}
+
 				v.Set(value.Convert(t))
 			} else {
 				return ConversionError{
