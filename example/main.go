@@ -48,16 +48,4 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(a)
 
-
-	//p := wwhttpparser.NewParser(r)
-
-	//p.CustomParser(cp)
-	//err := p.ParseFormRequest(&a)
-	//if err != nil {
-	//	return
-	//}
-	//
-	//fmt.Println(a)
-	////fmt.Println(*a.YearOfBirth)
-
 }
