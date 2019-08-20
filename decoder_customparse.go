@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 func (d *Decoder) CustomParser(parserMap CustomParserMap) {
@@ -52,8 +53,11 @@ func (d *Decoder) findMatchRecursiveStructType(t reflect.Type, path string) (ref
 	for _, f := range struc.fields {
 		if f.typ.Kind() == reflect.Struct {
 			if f.isSubStructParse {
-				if _, ok := f.typ.FieldByName(path); ok {
-					return f.typ, &f.name, nil
+				for i := 0; i < f.typ.NumField() ; i++ {
+					sf := f.typ.Field(i)
+					if strings.EqualFold(snakeCase(sf.Name), path) {
+						return f.typ, &f.name, nil
+					}
 				}
 			}
 		}

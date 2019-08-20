@@ -51,6 +51,7 @@ func (c *cache) parsePath(p string, t reflect.Type) ([]pathPart, error) {
 	parts := make([]pathPart, 0)
 	path := make([]string, 0)
 	keys := strings.Split(p, ".")
+
 	for i := 0; i < len(keys); i++ {
 
 		if t.Kind() != reflect.Struct {
@@ -218,6 +219,9 @@ type structInfo struct {
 func (i *structInfo) get(alias string) *fieldInfo {
 	for _, field := range i.fields {
 		if strings.EqualFold(field.alias, alias) {
+			return field
+		}
+		if strings.EqualFold(snakeCase(field.alias), alias) {
 			return field
 		}
 	}
