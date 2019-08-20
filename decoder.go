@@ -79,6 +79,7 @@ func (d *Decoder) Decode(dst interface{}, src map[string][]string) error {
 	v = v.Elem()
 	t := v.Type()
 	errors := MultiError{}
+
 	for path, values := range src {
 		if parts, err := d.cache.parsePath(path, t); err == nil {
 			if err = d.decode(v, path, parts, values); err != nil {
@@ -88,14 +89,8 @@ func (d *Decoder) Decode(dst interface{}, src map[string][]string) error {
 			if st, sName, err := d.findMatchRecursiveStructType(t, path); err == nil {
 
 				c := newCache()
-				_, err := c.parsePath("B", st)
-				if err == nil {
-					err = fmt.Errorf("invalid path in cache.parsePath should return an error.")
-					errors[path] = err
-					continue
-				}
-				if parts, err := c.parsePath(path, st); err == nil {
 
+				if parts, err := c.parsePath(path, st); err == nil {
 					sv := v.FieldByName(*sName)
 					if err = d.decode(sv, path, parts, values); err != nil {
 						errors[path] = err
