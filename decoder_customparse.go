@@ -36,7 +36,8 @@ func (d *Decoder) parseCustomParser(value string, v reflect.Value) error {
 
 func (d *Decoder) hasCustomParser(v reflect.Value) bool {
 
-	if pm:= *d.parserMap; pm != nil {
+	if d.parserMap != nil {
+		pm := *d.parserMap
 		name := fmt.Sprint(v.Type())
 
 		_, ok := pm[name]
