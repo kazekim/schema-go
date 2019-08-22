@@ -35,11 +35,16 @@ func (d *Decoder) parseCustomParser(value string, v reflect.Value) error {
 }
 
 func (d *Decoder) hasCustomParser(v reflect.Value) bool {
-	pm := *d.parserMap
-	name := fmt.Sprint(v.Type())
 
-	_, ok := pm[name]
-	return ok
+	if d.parserMap != nil {
+		pm := *d.parserMap
+		name := fmt.Sprint(v.Type())
+
+		_, ok := pm[name]
+		return ok
+	}
+
+	return false
 }
 
 func (d *Decoder) findMatchRecursiveStructType(t reflect.Type, path string) (reflect.Type, *string, error) {
